@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>gen z slang and vibes</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="title-page">
+        <h1>🔥 gen z <span>slang</span> and vibes ⚡</h1>
+        <p class="byline"><em>by Akash Sriram, a confused millennial</em></p>
+        <!-- Replace decorative SVGs with emojis -->
+        <span class="emoji" style="position: absolute; top: 10%; left: 10%; font-size: 30px;">😎</span>
+        <span class="emoji" style="position: absolute; top: 20%; right: 15%; font-size: 30px;">💯</span>
+        <span class="emoji" style="position: absolute; bottom: 10%; left: 20%; font-size: 30px;">🔥</span>
+        <span class="emoji" style="position: absolute; top: 15%; left: 30%; font-size: 30px;">👀</span>
+        <span class="emoji" style="position: absolute; bottom: 20%; right: 25%; font-size: 30px;">💅</span>
+        <span class="emoji" style="position: absolute; bottom: 30%; left: 40%; font-size: 30px;">✨</span>
+    </div>
+    
+    <style>
+    .byline {
+        font-size: 1.1em;
+        margin-top: 5px;
+        color: rgba(255, 255, 255, 0.7);
+    }
+    </style>
+
+    <div id="article">
+        <p>Okay, I’m Akash, a 29-year-old millennial, and I’m totally lost with Gen Z slang. Like, what even is “skibidi”? I thought I was hip with “lit,” but apparently, there’s a whole new language out there! So, I made this project to figure out Gen Z lingo, help other confused millennials like me, and maybe bridge our generational gap. Let’s dive into this wild world together.</p>
+        
+        <p>Gen Z slang is everywhere, born from the internet—think TikTok, Twitter, and memes. Words like “stan” come from Eminem’s 2000 song about an obsessive fan, but now it means you’re a superfan. I stan coffee, I guess? Then there’s “yeet,” which started in a 2014 viral video of a kid yelling it while throwing something. Now it’s an all-purpose hype word. I tried saying “yeet” at work, and people just stared at me.</p>
+        
+        <p>Some terms, like “flex,” have roots in 90s hip-hop but got a Gen Z glow-up. It means showing off—like, “He’s flexing his new car.” I’m still figuring out “no cap” (it means “honest,” apparently), and don’t get me started on “vibe check.” Gen Z pulls a lot from African American Vernacular English (AAVE) and internet culture, remixing language faster than I can keep up. It’s chaotic, but kind of amazing how they use slang to connect and express authenticity.</p>
+        
+        <p>I’m baffled, but I’m learning! Gen Z’s creativity is next-level, and their slang reflects a generation that’s all about community and humor. If I can get it, so can you—let’s explore this together!</p>
+    </div>
+
+    <div id="word-cloud-section">
+        <div id="word-list">
+            <ul id="word-list-items"></ul>
+        </div>
+        <div id="word-cloud">
+            <div id="cloud-frame">
+                <div id="cloud"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close">×</span>
+            <h4 id="modal-term"></h4>
+            <p id="explanation"></p>
+            <img src="images/speaker.svg" id="play-tts" alt="Play TTS" class="play-tts-btn">
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
