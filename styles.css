@@ -16,7 +16,7 @@ body {
 }
 
 #title-page {
-    padding: 50px;
+    padding: 8vmin;
     text-align: center;
     color: white;
     position: relative;
@@ -24,10 +24,11 @@ body {
 }
 
 #title-page h1 {
-    font-size: 3.5em;
+    font-size: clamp(2rem, 6vw, 3.5rem);
     text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
     font-weight: 700;
     letter-spacing: -1px;
+    margin: 0.5rem 0;
 }
 
 #title-page h1 span {
@@ -40,14 +41,17 @@ body {
     transform: rotate(-2deg);
 }
 
-#title-page h2 {
-    font-size: 1.5em;
-    margin-top: 10px;
+.byline {
+    font-size: clamp(0.9rem, 3vw, 1.1rem);
+    margin-top: 0.5rem;
+    color: rgba(255, 255, 255, 0.7);
 }
 
 .emoji {
     filter: drop-shadow(0 2px 5px rgba(0,0,0,0.2));
     animation: floating 5s ease-in-out infinite;
+    opacity: 0.9;
+    z-index: -1;
 }
 
 @keyframes floating {
@@ -67,9 +71,10 @@ body {
 }
 
 #article {
+    width: 85%;
     max-width: 800px;
     margin: 20px auto 40px;
-    padding: 30px;
+    padding: 5%;
     background: rgba(255, 255, 255, 0.9);
     border-radius: 20px;
     box-shadow: 0 15px 30px rgba(0,0,0,0.2);
@@ -89,24 +94,18 @@ body {
     background: linear-gradient(90deg, #ff758c, #ff7eb3);
 }
 
-#article h2 {
-    font-size: 2em;
-    color: #ff758c;
-    font-family: 'Space Grotesk', sans-serif;
-    margin-top: 0;
-}
-
 #article p {
     line-height: 1.8;
     color: #333;
     font-family: 'Space Grotesk', sans-serif;
-    font-size: 1.05em;
+    font-size: clamp(0.9rem, 2vw, 1.05rem);
+    margin: 1rem 0;
 }
 
 #word-cloud-section {
     display: flex;
     align-items: flex-start;
-    padding: 50px;
+    padding: 5vmin;
     gap: 20px;
     opacity: 0;
     transform: translateY(20px);
@@ -119,28 +118,20 @@ body {
 }
 
 #word-list {
-    width: 200px;
+    flex: 0 0 clamp(150px, 20%, 200px);
     padding: 15px;
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
     border-radius: 15px;
     box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-    max-height: 1000px; /* Match the height of cloud-frame */
-    overflow-y: auto; /* Add scrolling if needed */
-}
-
-#word-list h3 {
-    font-size: 1.5em;
-    margin-bottom: 15px;
-    color: white;
-    font-family: 'Space Grotesk', sans-serif;
-    font-weight: 700;
-    letter-spacing: -0.5px;
+    max-height: 70vh;
+    overflow-y: scroll;
 }
 
 #word-list-items {
     list-style: none;
     padding: 0;
+    margin: 0;
 }
 
 #word-list-items li {
@@ -168,17 +159,21 @@ body {
 #word-list-items li .color-bar {
     width: 20px;
     height: 20px;
+    min-width: 20px;
     margin-right: 10px;
     border-radius: 50%;
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
 #word-list-items li span {
-    font-size: 1em;
+    font-size: clamp(0.8rem, 2vw, 1rem);
     color: white;
     font-family: 'Space Grotesk', sans-serif;
     font-weight: 500;
     letter-spacing: 0.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 #word-cloud {
@@ -186,16 +181,10 @@ body {
     text-align: center;
 }
 
-#word-cloud h2 {
-    font-size: 2em;
-    color: white;
-    font-family: 'Space Grotesk', sans-serif;
-}
-
 #cloud-frame {
-    width: 90%;
-    max-width: 1000px;
-    height: 800px; 
+    width: 100%;
+    aspect-ratio: 5/4;
+    max-height: 70vh;
     margin: 0 auto;
     position: relative;
     overflow: hidden;
@@ -209,7 +198,7 @@ body {
     position: relative;
     width: 100%;
     height: 100%;
-    cursor: url('images/cursor.svg'), auto;
+    cursor: pointer;
 }
 
 .bubble {
@@ -220,7 +209,7 @@ body {
     position: absolute;
     color: rgba(0, 0, 0, 0.7);
     text-align: center;
-    font-weight: normal;
+    font-weight: bold;
     font-family: 'Space Grotesk', sans-serif;
     word-break: break-word;
     line-height: 1;
@@ -229,11 +218,10 @@ body {
     transform: scale(0.8) rotate(10deg);
     transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
     filter: blur(2px);
-    min-width: 80px; 
-    min-height: 80px; 
-    padding: 15px;
+    min-width: 60px; 
+    min-height: 60px; 
+    padding: 10px;
     opacity: 0.95;
-    font-weight: 600;
     animation: float 6s ease-in-out infinite;
     animation-play-state: paused;
     transform-style: preserve-3d;
@@ -282,9 +270,9 @@ body {
 
 .modal-content {
     background-color: white;
-    margin: 15% auto;
+    margin: 10vh auto;
     padding: 30px;
-    width: 80%;
+    width: 85%;
     max-width: 600px;
     border-radius: 20px;
     box-shadow: 0 15px 30px rgba(0,0,0,0.2);
@@ -300,19 +288,9 @@ body {
     opacity: 1;
 }
 
-.modal-content::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 10px;
-    background-color: var(--term-color);
-}
-
 #modal-term {
     font-family: 'Outfit', sans-serif;
-    font-size: 1.8em;
+    font-size: clamp(1.5rem, 5vw, 1.8rem);
     margin-top: 10px;
     margin-bottom: 20px;
     color: #333;
@@ -348,7 +326,7 @@ body {
     line-height: 1.8;
     color: #333;
     font-family: 'Space Grotesk', sans-serif;
-    font-size: 1.05em;
+    font-size: clamp(0.9rem, 3vw, 1.05rem);
 }
 
 .play-tts-btn {
@@ -364,73 +342,83 @@ body {
     filter: drop-shadow(0 3px 5px rgba(0,0,0,0.2));
 }
 
-/* Particle effect */
-.particle {
-    pointer-events: none;
-    position: fixed;
-    border-radius: 50%;
-    z-index: 1000;
-}
-
-/* Responsiveness */
-@media (max-width: 800px) {
+/* Mobile styles */
+@media (max-width: 768px) {
     #word-cloud-section {
         flex-direction: column;
-        padding: 20px;
+        padding: 15px;
     }
+    
     #word-list {
-        width: 100%;
-        margin-bottom: 20px;
-    }
-    #word-list-items {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-    }
-    #word-list-items li {
-        margin-right: 20px;
-    }
-    #cloud-frame {
-        height: 400px;
-    }
-    .bubble {
-        padding: 10px;
-    }
-    .modal-content {
+        flex: 0 0 auto;
         width: 90%;
+        margin-bottom: 20px;
+        max-height: 200px;
+    }
+    
+    #cloud-frame {
+        aspect-ratio: 3/2;
+        height: auto;
+        min-height: 300px;
+    }
+    
+    .bubble {
+        font-size: clamp(0.7rem, 4vw, 0.9rem) !important;
+        min-width: 50px;
+        min-height: 50px;
+    }
+    
+    .modal-content {
+        padding: 20px;
+        margin: 5vh auto;
+    }
+    
+    #modal-term {
+        margin-top: 20px;
     }
 }
 
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 100;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.7);
-    backdrop-filter: blur(5px);
+/* Small mobile styles */
+@media (max-width: 480px) {
+    #title-page {
+        padding: 5vmin;
+    }
+    
+    #title-page h1 {
+        font-size: clamp(1.8rem, 7vw, 2.5rem);
+    }
+    
+    .bubble {
+        min-width: 40px;
+        min-height: 40px;
+        padding: 5px;
+    }
+    
+    #cloud-frame {
+        min-height: 250px;
+    }
+    
+    .close {
+        width: 25px;
+        height: 25px;
+        font-size: 20px;
+        line-height: 20px;
+    }
 }
 
-.modal-content {
-    background-color: white;
-    margin: 15% auto;
-    padding: 30px;
-    width: 80%;
-    max-width: 600px;
-    border-radius: 20px;
-    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
-    position: relative;
-    overflow: hidden;
-    transform: translateY(20px);
-    opacity: 0;
-    animation: modalFadeIn 0.3s forwards;
-}
-
-@keyframes modalFadeIn {
-    to {
-        transform: translateY(0);
-        opacity: 1;
+/* For height-constrained devices */
+@media (max-height: 700px) {
+    #word-list {
+        max-height: 40vh;
+    }
+    
+    #cloud-frame {
+        max-height: 50vh;
+    }
+    
+    .modal-content {
+        margin: 5vh auto;
+        max-height: 80vh;
+        overflow-y: auto;
     }
 }
