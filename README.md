@@ -111,6 +111,5 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Acknowledgements
 
-- Special thanks to [Anthropic Claude](https://www.anthropic.com) for assistance with code review and documentation
 - Font families: [Outfit](https://fonts.google.com/specimen/Outfit) and [Space Grotesk](https://fonts.google.com/specimen/Space+Grotesk)
 - Inspired by various Gen Z cultural analysis articles and social media trends
