@@ -13,15 +13,20 @@ const words = [
     { text: "flex", color: "#b8ffdc", explanation: "Flex means showing off, like wealth or wins. Example: 'He's flexing his new kicks.' From 1990s hip-hop, it boomed in the 2010s on Instagram. Gen Z uses it to call out flash, like 'Stop flexing!' It's tied to social media and authenticity debates. It's over a decade big now." },
     { text: "stan", color: "#8ff5d9", explanation: "Stan is a mega-fan, from Eminem's 2000 song 'Stan.' Example: 'I stan this show!' It hit slang in the 2010s on stan Twitter. Gen Z uses it straight or ironic, like 'Stan forever!' It's about fandom love and has been big for about 10 years." },
     { text: "yeet", color: "#ffbe94", explanation: "Yeet means throwing hard or hyping up. Example: 'Yeet this trash!' or 'Yeet, we won!' From a 2014 viral video, it's pure Gen Z energy. It's wild and flexible, showing their humor. It's been a dictionary word since 2022, about 10 years old and thriving." },
-    { text: "rizz", color: "#d4a5ff", explanation: "Rizz means charisma or charm, especially when flirting. Short for 'charisma,' it blew up on TikTok in 2022 thanks to creators like Kai Cenat. Example: 'He’s got so much rizz, she said yes right away!' Gen Z uses it to describe someone’s game or vibe in romantic situations. It’s super new, only a few years old, but already huge online." },
-    { text: "bussin'", color: "#ffd5a0", explanation: "Bussin' means something is really good, often used for food. It comes from African American Vernacular English (AAVE) and got popular on TikTok in the early 2020s. Example: 'This pizza is bussin’!' Gen Z loves it for hyping up anything amazing. It’s been around for a few years and is still going strong." },
-    { text: "drip", color: "#a5e6ff", explanation: "Drip refers to stylish, cool fashion or swagger. It started in hip-hop culture in the 2010s, meaning flashy jewelry or outfits, and Gen Z made it mainstream on Instagram and TikTok. Example: 'His drip is on point with that jacket!' It’s all about confidence and style, and it’s been big for about a decade." },
-    { text: "ick", color: "#f5a5c2", explanation: "Ick describes a sudden feeling of repulsion or a turn-off, often in dating, triggered by a specific behavior. It blew up on TikTok around 2022-2023 from the phrase 'gives me the ick.' Example: 'He chewed with his mouth open—total ick!' Gen Z uses it to share funny dating pet peeves. It’s pretty new but super relatable." },
-    { text: "sus", color: "#a5ffd6", explanation: "Sus is short for 'suspicious,' used to describe something or someone that seems off. It exploded in 2020 thanks to the game Among Us, where players call out 'sus' behavior. Example: 'He’s acting sus, I think he’s lying.' Gen Z loves it for gaming and memes. It’s been huge for a few years now." },
+    { text: "rizz", color: "#d4a5ff", explanation: "Rizz means charisma or charm, especially when flirting. Short for 'charisma,' it blew up on TikTok in 2022 thanks to creators like Kai Cenat. Example: 'He's got so much rizz, she said yes right away!' Gen Z uses it to describe someone's game or vibe in romantic situations. It's super new, only a few years old, but already huge online." },
+    { text: "bussin'", color: "#ffd5a0", explanation: "Bussin' means something is really good, often used for food. It comes from African American Vernacular English (AAVE) and got popular on TikTok in the early 2020s. Example: 'This pizza is bussin'!' Gen Z loves it for hyping up anything amazing. It's been around for a few years and is still going strong." },
+    { text: "drip", color: "#a5e6ff", explanation: "Drip refers to stylish, cool fashion or swagger. It started in hip-hop culture in the 2010s, meaning flashy jewelry or outfits, and Gen Z made it mainstream on Instagram and TikTok. Example: 'His drip is on point with that jacket!' It's all about confidence and style, and it's been big for about a decade." },
+    { text: "ick", color: "#f5a5c2", explanation: "Ick describes a sudden feeling of repulsion or a turn-off, often in dating, triggered by a specific behavior. It blew up on TikTok around 2022-2023 from the phrase 'gives me the ick.' Example: 'He chewed with his mouth open—total ick!' Gen Z uses it to share funny dating pet peeves. It's pretty new but super relatable." },
+    { text: "sus", color: "#a5ffd6", explanation: "Sus is short for 'suspicious,' used to describe something or someone that seems off. It exploded in 2020 thanks to the game Among Us, where players call out 'sus' behavior. Example: 'He's acting sus, I think he's lying.' Gen Z loves it for gaming and memes. It's been huge for a few years now." },
 ];
 
 // Audio object to store current playback
 let currentAudio = null;
+
+// Global variables to track window size
+let windowWidth = window.innerWidth;
+let windowHeight = window.innerHeight;
+let isMobile = windowWidth < 768;
 
 // Wait for DOM to be fully loaded before initializing
 document.addEventListener('DOMContentLoaded', function() {
@@ -29,6 +34,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeWordCloud();
     setupModalControls();
     setupIntersectionObserver();
+    setupResizeHandling();
 });
 
 // Create word list on the left
@@ -48,13 +54,14 @@ function initializeWordList() {
         span.textContent = word.text.toUpperCase();
         li.appendChild(colorBar);
         li.appendChild(span);
-        li.addEventListener('click', () => showModal(word.explanation));
-        li.style.transitionDelay = `${index * 0.1}s`;
+        li.addEventListener('click', () => showModal(word));
+        li.setAttribute('data-word', word.text);
+        li.style.transitionDelay = `${index * 0.05}s`; // Reduced delay for faster animation
         wordList.appendChild(li);
     });
 }
 
-// Create bubbles for the word cloud
+// Create bubbles for the word cloud with responsive layout
 function initializeWordCloud() {
     const cloudDiv = document.getElementById('cloud');
     const frame = document.getElementById('cloud-frame');
@@ -64,14 +71,24 @@ function initializeWordCloud() {
         return;
     }
     
+    // Clear any existing bubbles
+    cloudDiv.innerHTML = '';
+    
     const frameWidth = frame.offsetWidth;
     const frameHeight = frame.offsetHeight;
     
+    // Calculate responsive bubble sizes
+    const baseFontSize = isMobile ? 16 : 20;
+    const minBubbleSize = isMobile ? 60 : 80;
+    
     // Generate positions for bubbles
     const bubblePositions = [];
-    const maxAttempts = 200; // Maximum attempts to find a good position
+    const maxAttempts = 100; // Maximum attempts to find a good position
 
-    words.forEach((word, index) => {
+    // Reduce number of bubbles on mobile
+    const displayWords = isMobile ? words.slice(0, 12) : words;
+
+    displayWords.forEach((word, index) => {
         const bubble = document.createElement('div');
         bubble.className = 'bubble';
         
@@ -79,103 +96,113 @@ function initializeWordCloud() {
         bubble.textContent = word.text.toLowerCase();
         bubble.style.backgroundColor = word.color;
         
-        // Calculate bubble size based on text length
+        // Calculate bubble size based on text length and screen size
         const wordLength = word.text.length;
         const isMultiWord = word.text.includes(' ');
         
-        // Adjust font size based on word length
-        let fontSize = 24;
+        // Adjust font size based on word length and device
+        let fontSize = baseFontSize;
         if (wordLength > 8 || isMultiWord) {
-            fontSize = 20;
+            fontSize = baseFontSize * 0.8;
         }
         bubble.style.fontSize = `${fontSize}px`;
         
         // Calculate bubble size, making multi-word bubbles larger
-        let bubbleSize = fontSize * 4;
-        if (isMultiWord) {
-            bubbleSize = fontSize * 5;
-        } else if (wordLength > 5) {
-            bubbleSize = fontSize * 4.5;
+        let bubbleSize = Math.max(minBubbleSize, fontSize * (isMultiWord ? 3.5 : 3));
+        
+        // Make sure bubbles aren't too big on small screens
+        if (isMobile) {
+            bubbleSize = Math.min(bubbleSize, frameWidth / 4);
         }
         
         bubble.style.width = `${bubbleSize}px`;
         bubble.style.height = bubble.style.width;
         
         // Set transition delay for staggered animation
-        bubble.style.transitionDelay = `${index * 0.1}s`;
+        bubble.style.transitionDelay = `${index * 0.05}s`; // Reduced delay for faster animation
         
-        // Try to find a position that doesn't overlap with existing bubbles
-        let attempts = 0;
+        // Use adaptive layout strategy based on screen size
         let posX, posY;
-        let validPosition = false;
         
-        // Grid-based placement to better utilize space
-        const gridCellSize = Math.min(frameWidth, frameHeight) / 8;
-        
-        while (!validPosition && attempts < maxAttempts) {
-            if (attempts < 100) {
-                // First try a more random approach
-                posX = Math.random() * (frameWidth - bubbleSize - 10);
-                posY = Math.random() * (frameHeight - bubbleSize - 10);
-            } else {
-                // Then try a more systematic grid-based approach
-                const gridX = Math.floor(attempts % 8);
-                const gridY = Math.floor((attempts - 100) / 8) % 8;
-                posX = gridX * gridCellSize + Math.random() * 20;
-                posY = gridY * gridCellSize + Math.random() * 20;
+        if (isMobile) {
+            // For mobile: simplified grid-based layout
+            const cols = 3; // Number of columns on mobile
+            const col = index % cols;
+            const row = Math.floor(index / cols);
+            
+            const colWidth = frameWidth / cols;
+            const rowHeight = colWidth; // Square arrangement
+            
+            posX = col * colWidth + (colWidth - bubbleSize) / 2;
+            posY = row * rowHeight + (rowHeight - bubbleSize) / 2;
+            
+            // Add some randomness to make it look more natural
+            posX += (Math.random() - 0.5) * 10;
+            posY += (Math.random() - 0.5) * 10;
+        } else {
+            // For desktop: more natural, randomly distributed layout
+            let attempts = 0;
+            let validPosition = false;
+            
+            while (!validPosition && attempts < maxAttempts) {
+                posX = Math.random() * (frameWidth - bubbleSize);
+                posY = Math.random() * (frameHeight - bubbleSize);
                 
-                // Make sure we don't exceed frame boundaries
-                posX = Math.min(posX, frameWidth - bubbleSize - 10);
-                posY = Math.min(posY, frameHeight - bubbleSize - 10);
+                validPosition = !doesOverlapExisting(posX, posY, bubbleSize, bubblePositions);
+                attempts++;
             }
             
-            validPosition = !doesOverlapOrExceedBounds(posX, posY, bubbleSize, bubblePositions, frameWidth, frameHeight);
-            attempts++;
+            // If we couldn't find a valid position, use a grid-based fallback
+            if (!validPosition) {
+                const gridSize = Math.ceil(Math.sqrt(words.length));
+                const cellWidth = frameWidth / gridSize;
+                const cellHeight = frameHeight / gridSize;
+                
+                const col = index % gridSize;
+                const row = Math.floor(index / gridSize);
+                
+                posX = col * cellWidth + (cellWidth - bubbleSize) / 2;
+                posY = row * cellHeight + (cellHeight - bubbleSize) / 2;
+            }
         }
         
-        // If we couldn't find a good position, place it somewhere that at least doesn't exceed bounds
-        if (!validPosition) {
-            posX = (index % 4) * (frameWidth / 4);
-            posY = Math.floor(index / 4) * (frameHeight / 4);
-            
-            // Make sure we don't exceed frame boundaries
-            posX = Math.min(posX, frameWidth - bubbleSize - 10);
-            posY = Math.min(posY, frameHeight - bubbleSize - 10);
-        }
-        
-        // Store the position and size
+        // Store the position and size for overlap checking
         bubblePositions.push({
             x: posX,
             y: posY,
             size: bubbleSize
         });
         
+        // Make sure bubble stays in bounds
+        posX = Math.max(0, Math.min(posX, frameWidth - bubbleSize));
+        posY = Math.max(0, Math.min(posY, frameHeight - bubbleSize));
+        
         bubble.style.left = `${posX}px`;
         bubble.style.top = `${posY}px`;
         
-        // Important: Make sure click handler is added correctly
+        // Add data attribute for easier identification
+        bubble.setAttribute('data-word', word.text);
+        
+        // Add click handler
         bubble.addEventListener('click', function() {
-            showModal(word.explanation);
+            showModal(word);
         });
         
         cloudDiv.appendChild(bubble);
     });
 }
 
-// Function to check if a bubble would overlap with existing bubbles or go outside the frame
-function doesOverlapOrExceedBounds(x, y, size, existingBubbles, frameWidth, frameHeight) {
-    // Check if bubble exceeds frame boundaries
-    if (x < 0 || y < 0 || x + size > frameWidth || y + size > frameHeight) {
-        return true;
-    }
+// Simplified overlap detection function
+function doesOverlapExisting(x, y, size, existingBubbles) {
+    const padding = isMobile ? 5 : 20; // Less padding on mobile
     
-    // Check if bubble overlaps with existing bubbles
     for (const bubble of existingBubbles) {
         const distance = Math.sqrt(
             Math.pow(x + size/2 - (bubble.x + bubble.size/2), 2) + 
             Math.pow(y + size/2 - (bubble.y + bubble.size/2), 2)
         );
-        const minDistance = (size/2 + bubble.size/2) + 20; // Adding 20px padding between bubbles
+        
+        const minDistance = (size/2 + bubble.size/2) + padding;
         
         if (distance < minDistance) {
             return true;
@@ -185,7 +212,7 @@ function doesOverlapOrExceedBounds(x, y, size, existingBubbles, frameWidth, fram
     return false;
 }
 
-// Setup modal controls
+// Setup modal controls with improved accessibility
 function setupModalControls() {
     const modal = document.getElementById('modal');
     const closeBtn = document.querySelector('.close');
@@ -196,98 +223,184 @@ function setupModalControls() {
         return;
     }
     
+    // Add keyboard accessibility
+    closeBtn.setAttribute('tabindex', '0');
+    closeBtn.setAttribute('role', 'button');
+    closeBtn.setAttribute('aria-label', 'Close modal');
+    
+    playTtsBtn.setAttribute('tabindex', '0');
+    playTtsBtn.setAttribute('role', 'button');
+    playTtsBtn.setAttribute('aria-label', 'Play text to speech');
+    
     // Close button handler
     closeBtn.onclick = function() {
-        modal.style.display = 'none';
-        if (currentAudio) {
-            currentAudio.pause();
-            currentAudio = null;
-        }
+        closeModal();
     };
+    
+    // Add keyboard support for close button
+    closeBtn.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+            closeModal();
+        }
+    });
     
     // Click outside modal to close
     window.onclick = function(event) {
         if (event.target === modal) {
-            modal.style.display = 'none';
-            if (currentAudio) {
-                currentAudio.pause();
-                currentAudio = null;
-            }
+            closeModal();
         }
     };
     
-    // TTS button handler
+    // Add keyboard support for ESC key to close modal
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.style.display === 'block') {
+            closeModal();
+        }
+    });
+    
+    // TTS button handler with improvements
     playTtsBtn.onclick = async function() {
-        const explanationText = document.getElementById('explanation');
-        if (!explanationText) {
-            console.error("Explanation text element not found");
-            return;
+        handleTTS();
+    };
+    
+    // Add keyboard support for TTS button
+    playTtsBtn.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+            handleTTS();
+        }
+    });
+}
+
+// Function to close the modal
+function closeModal() {
+    const modal = document.getElementById('modal');
+    modal.style.display = 'none';
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+    }
+    
+    // Return focus to the element that opened the modal
+    if (window.lastFocusedElement) {
+        window.lastFocusedElement.focus();
+    }
+}
+
+// Function to handle TTS
+async function handleTTS() {
+    const explanationText = document.getElementById('explanation');
+    const playTtsBtn = document.getElementById('play-tts');
+    
+    if (!explanationText || !playTtsBtn) {
+        console.error("Required elements not found");
+        return;
+    }
+    
+    // Visual feedback for button press
+    playTtsBtn.classList.add('active');
+    setTimeout(() => {
+        playTtsBtn.classList.remove('active');
+    }, 300);
+    
+    const text = explanationText.textContent;
+    try {
+        // Stop any currently playing audio
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio = null;
+            return; // If audio was playing, just stop it
         }
         
-        const text = explanationText.textContent;
-        try {
-            const response = await fetch('https://texttospeech.googleapis.com/v1/text:synthesize?key=AIzaSyA2yl2ImFosjZXN5lk-WI89m13BuZfhAkI', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
+        // Show loading indicator
+        playTtsBtn.classList.add('loading');
+        
+        const response = await fetch('https://texttospeech.googleapis.com/v1/text:synthesize?key=AIzaSyA2yl2ImFosjZXN5lk-WI89m13BuZfhAkI', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                input: { text: text },
+                voice: {
+                    languageCode: 'en-US',
+                    name: 'en-US-Chirp3-HD-Puck'
                 },
-                body: JSON.stringify({
-                    input: { text: text },
-                    voice: {
-                        languageCode: 'en-US',
-                        name: 'en-US-Chirp3-HD-Puck'
-                    },
-                    audioConfig: {
-                        audioEncoding: 'LINEAR16',
-                        effectsProfileId: ['handset-class-device'],
-                        pitch: 0,
-                        speakingRate: 1
-                    }
-                })
-            });
-
-            const data = await response.json();
-            if (data.audioContent) {
-                // Stop any currently playing audio
-                if (currentAudio) {
-                    currentAudio.pause();
+                audioConfig: {
+                    audioEncoding: 'LINEAR16',
+                    effectsProfileId: ['handset-class-device'],
+                    pitch: 0,
+                    speakingRate: 1
                 }
-                // Create new audio and store it
-                currentAudio = new Audio('data:audio/wav;base64,' + data.audioContent);
-                currentAudio.play();
-            } else {
-                console.error('TTS API error:', data);
-                alert('TTS API error. Please check the response in the console.');
-            }
-        } catch (error) {
-            console.error('Error playing TTS:', error);
-            alert('Failed to play audio. Please check your Google Cloud API key and internet connection.');
+            })
+        });
+
+        const data = await response.json();
+        
+        // Remove loading indicator
+        playTtsBtn.classList.remove('loading');
+        
+        if (data.audioContent) {
+            // Create new audio and store it
+            currentAudio = new Audio('data:audio/wav;base64,' + data.audioContent);
+            
+            // Add event listener for when audio ends
+            currentAudio.addEventListener('ended', () => {
+                currentAudio = null;
+                playTtsBtn.classList.remove('playing');
+            });
+            
+            // Add class to show it's playing
+            playTtsBtn.classList.add('playing');
+            
+            currentAudio.play();
+        } else {
+            console.error('TTS API error:', data);
+            alert('Speech synthesis not available right now. Please try again later.');
         }
-    };
+    } catch (error) {
+        console.error('Error playing TTS:', error);
+        playTtsBtn.classList.remove('loading');
+        alert('Failed to play audio. Please check your internet connection.');
+    }
 }
 
 // Function to show the modal with explanation
-function showModal(explanation) {
+function showModal(word) {
     const modal = document.getElementById('modal');
     const explanationText = document.getElementById('explanation');
     const modalTerm = document.getElementById('modal-term');
     
-    if (!modal || !explanationText) {
-        console.error("Modal or explanation element not found");
+    if (!modal || !explanationText || !modalTerm) {
+        console.error("Modal elements not found");
         return;
     }
     
-    // Find which word this explanation belongs to
-    const word = words.find(w => w.explanation === explanation);
-    if (word) {
-        modalTerm.textContent = word.text.toUpperCase();
-    } else {
-        modalTerm.textContent = "Term";
-    }
+    // Remember which element opened the modal (for returning focus later)
+    window.lastFocusedElement = document.activeElement;
     
-    explanationText.textContent = explanation;
+    // Set the term and explanation
+    modalTerm.textContent = word.text.toUpperCase();
+    explanationText.textContent = word.explanation;
+    
+    // Set the color for the modal header
+    document.documentElement.style.setProperty('--term-color', word.color);
+    
+    // Show the modal
     modal.style.display = 'block';
-    modal.classList.add('open'); // Add this to trigger animation
+    
+    // Force a reflow to ensure animation works
+    void modal.offsetWidth;
+    
+    // Add the open class to trigger animation
+    modal.classList.add('open');
+    
+    // Set focus to the close button for accessibility
+    setTimeout(() => {
+        const closeBtn = document.querySelector('.close');
+        if (closeBtn) {
+            closeBtn.focus();
+        }
+    }, 100);
 }
 
 // Setup Intersection Observer for animations
@@ -309,7 +422,7 @@ function setupIntersectionObserver() {
                 items.forEach((item, index) => {
                     setTimeout(() => {
                         item.classList.add('visible');
-                    }, index * 100);
+                    }, index * 50); // Faster animation for mobile
                 });
                 
                 // Animate bubbles
@@ -317,11 +430,48 @@ function setupIntersectionObserver() {
                 bubbles.forEach((bubble, index) => {
                     setTimeout(() => {
                         bubble.classList.add('visible');
-                    }, index * 100);
+                    }, index * 50); // Faster animation for mobile
                 });
             }
         });
-    }, { threshold: 0.2 });
+    }, { threshold: 0.1 }); // Lower threshold for faster triggering
     
     observer.observe(wordCloudSection);
+}
+
+// Handle window resize and orientation changes
+function setupResizeHandling() {
+    let resizeTimer;
+    
+    window.addEventListener('resize', function() {
+        // Clear the timer
+        clearTimeout(resizeTimer);
+        
+        // Set a new timer to delay execution
+        resizeTimer = setTimeout(function() {
+            const newWidth = window.innerWidth;
+            
+            // Only reinitialize if width changed significantly or mobile/desktop state changed
+            if (Math.abs(newWidth - windowWidth) > 50 || (newWidth < 768 && !isMobile) || (newWidth >= 768 && isMobile)) {
+                windowWidth = newWidth;
+                windowHeight = window.innerHeight;
+                isMobile = windowWidth < 768;
+                
+                // Reinitialize word cloud for the new screen size
+                initializeWordCloud();
+            }
+        }, 250);
+    });
+    
+    // Handle orientation changes specifically on mobile
+    window.addEventListener('orientationchange', function() {
+        setTimeout(function() {
+            windowWidth = window.innerWidth;
+            windowHeight = window.innerHeight;
+            isMobile = windowWidth < 768;
+            
+            // Reinitialize word cloud after orientation change
+            initializeWordCloud();
+        }, 200); // Short delay to ensure dimensions are updated
+    });
 }
