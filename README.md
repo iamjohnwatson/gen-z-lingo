@@ -2,8 +2,6 @@
 
 An interactive web application that visualizes and explains popular Gen Z slang terms through an engaging, colorful interface.
 
-![Gen Z Slang and Vibes Screenshot](https://placeholder-image.com/gen-z-slang-screenshot.png)
-
 ## Features
 
 - **Interactive Word Cloud**: Colorful, floating bubbles containing popular Gen Z slang terms
