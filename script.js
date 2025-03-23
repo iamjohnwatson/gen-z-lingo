@@ -61,7 +61,7 @@ function initializeWordList() {
     });
 }
 
-// Create bubbles for the word cloud with responsive layout
+// Create bubbles for the word cloud with responsive layout - COMPLETELY REVISED
 function initializeWordCloud() {
     const cloudDiv = document.getElementById('cloud');
     const frame = document.getElementById('cloud-frame');
@@ -79,82 +79,87 @@ function initializeWordCloud() {
     
     // Calculate responsive bubble sizes
     const baseFontSize = isMobile ? 16 : 20;
-    const minBubbleSize = isMobile ? 60 : 80;
     
-    // Generate positions for bubbles
-    const bubblePositions = [];
-    const maxAttempts = 100; // Maximum attempts to find a good position
-
-    // Reduce number of bubbles on mobile
+    // Reduce number of bubbles on mobile and set minimum size
     const displayWords = isMobile ? words.slice(0, 12) : words;
-
-    displayWords.forEach((word, index) => {
-        const bubble = document.createElement('div');
-        bubble.className = 'bubble';
+    
+    // IMPROVED APPROACH: Calculate grid layout for mobile
+    if (isMobile) {
+        // For mobile: use a proper grid layout with fixed cell sizes
+        const numRows = 4;  // Fixed number of rows
+        const numCols = 3;  // Fixed number of columns
         
-        // Use lowercase for all bubble text
-        bubble.textContent = word.text.toLowerCase();
-        bubble.style.backgroundColor = word.color;
+        const cellWidth = frameWidth / numCols;
+        const cellHeight = frameHeight / numRows;
         
-        // Calculate bubble size based on text length and screen size
-        const wordLength = word.text.length;
-        const isMultiWord = word.text.includes(' ');
+        // Calculate optimal bubble size based on cell dimensions with margins
+        const margin = 10; // pixels of margin between bubbles
+        const bubbleSize = Math.min(cellWidth, cellHeight) - (margin * 2);
         
-        // Adjust font size based on word length and device
-        let fontSize = baseFontSize;
-        if (wordLength > 8 || isMultiWord) {
-            fontSize = baseFontSize * 0.8;
-        }
-        bubble.style.fontSize = `${fontSize}px`;
-        
-        // Calculate bubble size, making multi-word bubbles larger
-        let bubbleSize = Math.max(minBubbleSize, fontSize * (isMultiWord ? 3.5 : 3));
-        
-        // Make sure bubbles aren't too big on small screens
-        if (isMobile) {
-            bubbleSize = Math.min(bubbleSize, frameWidth / 4);
-        }
-        
-        bubble.style.width = `${bubbleSize}px`;
-        bubble.style.height = bubble.style.width;
-        
-        // Set transition delay for staggered animation
-        bubble.style.transitionDelay = `${index * 0.05}s`; // Reduced delay for faster animation
-        
-        // Use adaptive layout strategy based on screen size
-        let posX, posY;
-        
-        if (isMobile) {
-            // For mobile: simplified grid-based layout
-            const cols = 3; // Number of columns on mobile
-            const col = index % cols;
-            const row = Math.floor(index / cols);
+        displayWords.forEach((word, index) => {
+            // Determine grid position
+            const col = index % numCols;
+            const row = Math.floor(index / numCols);
             
-            const colWidth = frameWidth / cols;
-            const rowHeight = colWidth; // Square arrangement
+            // Skip if we've filled our grid
+            if (row >= numRows) return;
             
-            posX = col * colWidth + (colWidth - bubbleSize) / 2;
-            posY = row * rowHeight + (rowHeight - bubbleSize) / 2;
+            // Create the bubble
+            const bubble = createBubble(
+                word,
+                baseFontSize,
+                bubbleSize,
+                col * cellWidth + margin,
+                row * cellHeight + margin,
+                index
+            );
             
-            // Add some randomness to make it look more natural
-            posX += (Math.random() - 0.5) * 10;
-            posY += (Math.random() - 0.5) * 10;
-        } else {
-            // For desktop: more natural, randomly distributed layout
+            cloudDiv.appendChild(bubble);
+        });
+    } else {
+        // For desktop: use the improved non-overlapping layout
+        const minDistance = 100; // Minimum distance between bubble centers
+        const minBubbleSize = 80;
+        const maxBubbleSize = 120;
+        const placedBubbles = [];
+        
+        // Try to place each bubble
+        displayWords.forEach((word, index) => {
+            // Calculate bubble size based on text length
+            const wordLength = word.text.length;
+            const isMultiWord = word.text.includes(' ');
+            
+            // Adjust font size based on word length
+            let fontSize = baseFontSize;
+            if (wordLength > 8 || isMultiWord) {
+                fontSize = baseFontSize * 0.8;
+            }
+            
+            // Calculate bubble size
+            let bubbleSize = Math.max(
+                minBubbleSize, 
+                Math.min(maxBubbleSize, fontSize * (isMultiWord ? 3.5 : 3))
+            );
+            
+            // Find a non-overlapping position
+            let posX, posY;
             let attempts = 0;
+            const maxAttempts = 50;
             let validPosition = false;
             
             while (!validPosition && attempts < maxAttempts) {
+                // Generate a random position
                 posX = Math.random() * (frameWidth - bubbleSize);
                 posY = Math.random() * (frameHeight - bubbleSize);
                 
-                validPosition = !doesOverlapExisting(posX, posY, bubbleSize, bubblePositions);
+                // Check if this position overlaps with existing bubbles
+                validPosition = !doesOverlapExisting(posX, posY, bubbleSize, placedBubbles, minDistance);
                 attempts++;
             }
             
-            // If we couldn't find a valid position, use a grid-based fallback
+            // If we couldn't find a valid position, use a backup grid position
             if (!validPosition) {
-                const gridSize = Math.ceil(Math.sqrt(words.length));
+                const gridSize = Math.ceil(Math.sqrt(displayWords.length));
                 const cellWidth = frameWidth / gridSize;
                 const cellHeight = frameHeight / gridSize;
                 
@@ -164,49 +169,77 @@ function initializeWordCloud() {
                 posX = col * cellWidth + (cellWidth - bubbleSize) / 2;
                 posY = row * cellHeight + (cellHeight - bubbleSize) / 2;
             }
-        }
-        
-        // Store the position and size for overlap checking
-        bubblePositions.push({
-            x: posX,
-            y: posY,
-            size: bubbleSize
+            
+            // Create the bubble
+            const bubble = createBubble(word, fontSize, bubbleSize, posX, posY, index);
+            
+            // Add this bubble's position to our tracking array
+            placedBubbles.push({
+                x: posX + bubbleSize/2,  // Store center point
+                y: posY + bubbleSize/2,
+                radius: bubbleSize/2
+            });
+            
+            cloudDiv.appendChild(bubble);
         });
-        
-        // Make sure bubble stays in bounds
-        posX = Math.max(0, Math.min(posX, frameWidth - bubbleSize));
-        posY = Math.max(0, Math.min(posY, frameHeight - bubbleSize));
-        
-        bubble.style.left = `${posX}px`;
-        bubble.style.top = `${posY}px`;
-        
-        // Add data attribute for easier identification
-        bubble.setAttribute('data-word', word.text);
-        
-        // Add click handler
-        bubble.addEventListener('click', function() {
-            showModal(word);
-        });
-        
-        cloudDiv.appendChild(bubble);
-    });
+    }
 }
 
-// Simplified overlap detection function
-function doesOverlapExisting(x, y, size, existingBubbles) {
-    const padding = isMobile ? 5 : 20; // Less padding on mobile
+// Helper function to create a bubble element
+function createBubble(word, fontSize, bubbleSize, posX, posY, index) {
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    
+    // Use lowercase for all bubble text
+    bubble.textContent = word.text.toLowerCase();
+    bubble.style.backgroundColor = word.color;
+    
+    // Set font size
+    bubble.style.fontSize = `${fontSize}px`;
+    
+    // Set size and position
+    bubble.style.width = `${bubbleSize}px`;
+    bubble.style.height = `${bubbleSize}px`;
+    bubble.style.left = `${posX}px`;
+    bubble.style.top = `${posY}px`;
+    
+    // Staggered animation delay
+    bubble.style.transitionDelay = `${index * 0.05}s`;
+    
+    // Data attribute for identification
+    bubble.setAttribute('data-word', word.text);
+    
+    // Click handler
+    bubble.addEventListener('click', function() {
+        showModal(word);
+    });
+    
+    return bubble;
+}
+
+// Improved overlap detection function that uses center points and radii
+function doesOverlapExisting(x, y, size, existingBubbles, minDistance) {
+    // Calculate center of the new bubble
+    const centerX = x + size/2;
+    const centerY = y + size/2;
+    const radius = size/2;
     
     for (const bubble of existingBubbles) {
+        // Calculate distance between centers
         const distance = Math.sqrt(
-            Math.pow(x + size/2 - (bubble.x + bubble.size/2), 2) + 
-            Math.pow(y + size/2 - (bubble.y + bubble.size/2), 2)
+            Math.pow(centerX - bubble.x, 2) + 
+            Math.pow(centerY - bubble.y, 2)
         );
         
-        const minDistance = (size/2 + bubble.size/2) + padding;
-        
-        if (distance < minDistance) {
+        // If the distance is less than the sum of radii plus padding, bubbles overlap
+        if (distance < radius + bubble.radius + (minDistance - size)) {
             return true;
         }
+    }
+    
+    // Check if bubble is too close to the edge
+    if (x < 10 || y < 10 || x + size > windowWidth - 10 || y + size > windowHeight - 10) {
+        return true;
     }
     
     return false;
@@ -422,7 +455,7 @@ function setupIntersectionObserver() {
                 items.forEach((item, index) => {
                     setTimeout(() => {
                         item.classList.add('visible');
-                    }, index * 50); // Faster animation for mobile
+                    }, index * 50);
                 });
                 
                 // Animate bubbles
@@ -430,11 +463,11 @@ function setupIntersectionObserver() {
                 bubbles.forEach((bubble, index) => {
                     setTimeout(() => {
                         bubble.classList.add('visible');
-                    }, index * 50); // Faster animation for mobile
+                    }, index * 50);
                 });
             }
         });
-    }, { threshold: 0.1 }); // Lower threshold for faster triggering
+    }, { threshold: 0.1 });
     
     observer.observe(wordCloudSection);
 }
@@ -472,6 +505,6 @@ function setupResizeHandling() {
             
             // Reinitialize word cloud after orientation change
             initializeWordCloud();
-        }, 200); // Short delay to ensure dimensions are updated
+        }, 200);
     });
 }
